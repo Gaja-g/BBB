@@ -4,6 +4,12 @@
     @* <meta charset="utf-8" /> *@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - BBB</title>
+
+    <link rel="stylesheet" href="~/css/main.css">
+    <link rel="stylesheet" href="~/css/styles.css">
+    <link rel="stylesheet" href="~/css/footer.css">
+    <link rel="stylesheet" href="~/css/filters.css">
+
 </head>
 <body>
 
@@ -13,10 +19,9 @@
             <h2>Menu</h2>
         </div>
         <ul class="sidebar-links">
-            <li><a href="index.html">Home</a></li>
+            <li><a href="/Home/Index">Home</a></li>
             <li><a href="/Home/Account">Account</a></li>
-            <li><a href="#">Library</a></li>
-            <li><a href="gameform.html">Game Form</a></li>
+            <li><a href="/Home/ToBeAdminPanel">Game Form</a></li>
         </ul>
     </div>
 
@@ -28,7 +33,7 @@
             <span></span>
         </div>
         <h1 class="site-title">
-            <a href="index.html" class="site-title__link">
+            <a href="/Home/Index" class="site-title__link">
                 BBB
             </a>
         </h1>
@@ -77,10 +82,10 @@
         <section class="footer-middle-column">
             <h4>Quick links</h4>
             <div class="quick-links-container">
-                <a href="index.html">Home</a>
-                <a href="account.html">Account</a>
+                <a href="/Home/Index">Home</a>
+                <a href="/Home/Account">Account</a>
                 <a href="#">Library</a>
-                <a href="gameform.html">Game Form</a>
+                <a href="/Home/ToBeAdminPanel">Game Form</a>
             </div>
             <div class="suggest-game-container">
                 <label for="suggest">Suggest a new board game</label>
@@ -115,6 +120,10 @@
         <p>University of Southern Denmark — Course: Web Technologies</p>
     </section>
     </footer>
+
+    <script src="~/js/filters.js"></script>
+    <script src="~/js/componentsLoader.js"></script>
+    <script src="~/js/sidebar.js"></script>
 
 </body>
 </html>
