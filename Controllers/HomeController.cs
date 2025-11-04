@@ -65,18 +65,6 @@ public class HomeController : Controller
         return View();
     }
     // Testing the db queries
-    public async Task<IActionResult> Test()
-    {
-        var foo = await _db.BoardGameUsers.Where(x => x.UserId == 4).ToListAsync();
-        var lines = foo.Select(x => $"{x.BoardGame.Title} - Borrowed on: {x.BorrowDate:yyyy-MM-dd} - Returned on: {x.ReturnDate:yyyy-MM-dd}");
-        return Content(string.Join("\n", lines), "text/plain");
-
-        /*
-        var usernames = await _db.BoardGames.Where(x => x.Title == "Catan").FirstAsync();
-        var usr = usernames.BoardGameTags.Select(x => x.Tag.Name);
-        return Content(string.Join("\n", usr), "text/plain");
-        */
-    }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
