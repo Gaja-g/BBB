@@ -2,7 +2,10 @@ using BBB.Data;
 using BBB.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
+using System.Runtime.CompilerServices;
 
 namespace BBB.Controllers;
 
@@ -63,4 +66,61 @@ public class HomeController : Controller
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
+
+
+
+    [HttpGet]
+    public IActionResult GetGames()
+    {
+        var games = _db.BoardGames.Select(g => new
+        {
+            g.Id,
+            g.Title,
+            g.Description,
+            g.Link
+        }).ToList();
+
+        return Json(games);
+    }
+    
+    [HttpPost]
+    public IActionResult BorrowGame([FromBody] int request)
+    {
+        // Get user info from session
+        var userId = HttpContext.Session.GetString("UserId");
+        var username = HttpContext.Session.GetString("Username");
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(); // User not logged in
+        }
+        BoardGame? game = _db.BoardGames.FirstOrDefault(g => g.Id == request);
+
+        if (game == null) return StatusCode(418, "I'm a teapot");
+        
+        if (game.StatusId != 1 && game.StatusId != 3) return Conflict();
+        
+        int userID;
+        if (!int.TryParse(userId, out userID)) return StatusCode(418, "I'm a teapot");
+
+
+        if (_db.BoardGameUsers.Count(bgu => bgu.UserId == userID && (bgu.ReturnDate == null || DateTime.Now < bgu.ReturnDate)) > 3) return Unauthorized();
+
+        game.StatusId = 3;
+
+        _db.BoardGameUsers.Add(
+            new()
+            {
+                BoardGameId = request,
+                UserId = userID,
+                BorrowDate = DateTime.Now
+            }
+        );
+
+
+
+        return Ok(new { message = $"Game borrowed by {username}" });
+    }
+
+
 }

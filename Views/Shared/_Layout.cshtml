@@ -37,13 +37,31 @@
                 BBB
             </a>
         </h1>
-        <div class="login" onclick="window.location.href='/Home/Login'">
-            <svg viewBox="0 0 24 24">
-                <circle cx="12" cy="8" r="4" />
-                <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
-            </svg>
-            <p>Login</p>
+        <div class="login" 
+            @if (string.IsNullOrEmpty(Context.Session.GetString("UserId")))
+            {
+                <div class="login" onclick="window.location.href='/Account/Login'">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="8" r="4" />
+                        <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+                    </svg>
+                    <p>Log In</p>
+                </div>
+            }
+            else
+            {
+                <div class="login" onclick="window.location.href='/Account/Logout'">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="8" r="4" />
+                        <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+                    </svg>
+                    <p>Log Out</p>
+                </div>
+            }
+
         </div>
+
+
     </div>
 
 
