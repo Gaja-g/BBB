@@ -60,6 +60,10 @@ public class HomeController : Controller
         return Content(string.Join("\n", usr), "text/plain");
         */
     }
+    public IActionResult Register()
+    {
+        return View();
+    }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
