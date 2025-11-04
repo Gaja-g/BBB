@@ -10,6 +10,17 @@ internal class Program
         // Add services to the container.
         builder.Services.AddControllersWithViews();
 
+        
+        // Add session support
+        builder.Services.AddDistributedMemoryCache(); // Required for session
+        builder.Services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromMinutes(30);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+        });
+
+
         // Add database context
         builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseLazyLoadingProxies()
@@ -29,7 +40,7 @@ internal class Program
         app.UseRouting();
 
         app.UseAuthorization();
-
+        app.UseSession();
         app.MapStaticAssets();
 
         app.MapControllerRoute(
