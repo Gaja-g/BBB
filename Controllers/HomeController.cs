@@ -23,20 +23,20 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        return View();
+        bool allowEdit = false;
+
+        var userId = HttpContext.Session.GetString("UserId");
+        int userID;
+        if (!int.TryParse(userId, out userID)) return View(false);
+
+        var user = _db.Users.FirstOrDefault(u => u.Id == userID);
+        if (user == null) return View(false);
+        if (user.Role.Name == "admin") return View(true);
+        return View(false);
+        
     }
 
     public IActionResult Account()
-    {
-        return View();
-    }
-
-    public IActionResult Login()
-    {
-        return View();
-    }
-
-    public IActionResult ToBeAdminPanel()
     {
         return View();
     }
@@ -59,10 +59,6 @@ public class HomeController : Controller
         var usr = usernames.BoardGameTags.Select(x => x.Tag.Name);
         return Content(string.Join("\n", usr), "text/plain");
         */
-    }
-    public IActionResult Register()
-    {
-        return View();
     }
     // Testing the db queries
 

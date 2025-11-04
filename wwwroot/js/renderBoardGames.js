@@ -22,11 +22,16 @@ function renderGames(games) {
             <article class="content">
                 <h1>${game.title}</h1>
                 <p>${game.description}</p>
-                <footer class="button-container">
-                    <button class="button button-primary" data-id="${game.id}">Borrow</button>
-                </footer>
-            </article>
-        `;
+                <section class="button-container">
+                    <Span>Available</Span>
+                    <div style="display:flex; gap:12px">
+                        ${allowEdit ? '<button class="button button-primary edit-button">Edit</button>' : ''}
+                        <button class="button button-primary" data-id="${game.id}">Borrow</button>
+                    </div>
+                </section>
+            </article>`
+        
+        ;
         list.appendChild(li);
     });
 
@@ -69,6 +74,7 @@ function borrowGame(gameId, buttonElement) {
 // Filter logic
 document.getElementById('filterInput').addEventListener('input', function() {
     const query = this.value.toLowerCase();
-    const filtered = gamesData.filter(game => game.name.toLowerCase().includes(query));
+    const filtered = gamesData.filter(game => game.title.toLowerCase().includes(query));
+
     renderGames(filtered);
 });
