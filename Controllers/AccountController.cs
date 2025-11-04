@@ -40,4 +40,10 @@ public class AccountController : Controller
         HttpContext.Session.Clear();
         return RedirectToAction("Index", "Home");
     }
+
+    
+    public IActionResult Register()
+    {
+        return View();
+    }
 }
