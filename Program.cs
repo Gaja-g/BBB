@@ -1,5 +1,6 @@
 using BBB.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity; // XD
 
 internal class Program
 {
@@ -15,6 +16,11 @@ internal class Program
                 options.UseLazyLoadingProxies()
                .UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+        builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders(); // XD
+
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -27,6 +33,9 @@ internal class Program
 
         app.UseHttpsRedirection();
         app.UseRouting();
+
+
+        app.UseAuthentication(); // XD
 
         app.UseAuthorization();
 
