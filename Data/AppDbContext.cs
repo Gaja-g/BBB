@@ -1,17 +1,18 @@
 ﻿using BBB.Data.Configurations;
 using BBB.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BBB.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
 
         // Core entities
-        public DbSet<User> Users => Set<User>();
-        public DbSet<Role> Roles => Set<Role>();
+        public DbSet<AppRole> AppRoles { get; set; }
         public DbSet<Auth> Auths => Set<Auth>();
 
         public DbSet<BoardGame> BoardGames => Set<BoardGame>();

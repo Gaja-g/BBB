@@ -4,17 +4,17 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace BBB.Data.Configurations
 {
-    public class UserConfiguration : IEntityTypeConfiguration<User>
+    public class UserConfiguration : IEntityTypeConfiguration<ApplicationUser>
     {
-        public void Configure(EntityTypeBuilder<User> builder)
+        public void Configure(EntityTypeBuilder<ApplicationUser> builder)
         {
             builder.ToTable("Users");
             builder.HasKey(u => u.Id);
 
-            builder.Property(u => u.Username)
+            builder.Property(u => u.UserName)
                    .IsRequired()
                    .HasMaxLength(128);
-            builder.HasIndex(u  => u.Username)
+            builder.HasIndex(u  => u.UserName)
                    .IsUnique();
 
             builder.Property(u => u.Email)
@@ -29,11 +29,6 @@ namespace BBB.Data.Configurations
                    .IsRequired()
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(u => u.Auth)
-                   .WithOne(a => a.User)
-                   .HasForeignKey<Auth>(a => a.UserId)
-                   .IsRequired()
-                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

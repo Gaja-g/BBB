@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace BBB.Data.Configurations
 {
-    public class RoleConfiguration : IEntityTypeConfiguration<Role>
+    public class RoleConfiguration : IEntityTypeConfiguration<AppRole>
     {
-        public void Configure(EntityTypeBuilder<Role> builder)
+        public void Configure(EntityTypeBuilder<AppRole> builder)
         {
             builder.ToTable("Roles");
 
