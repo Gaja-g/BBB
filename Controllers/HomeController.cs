@@ -23,8 +23,6 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        bool allowEdit = false;
-
         var userId = HttpContext.Session.GetString("UserId");
         int userID;
         if (!int.TryParse(userId, out userID)) return View(false);
