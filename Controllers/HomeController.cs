@@ -6,6 +6,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+
 
 namespace BBB.Controllers;
 
@@ -25,6 +27,36 @@ public class HomeController : Controller
     {
         var userId = HttpContext.Session.GetString("UserId");
         int userID;
+        
+        var users = _db.Users.ToList();
+        foreach (var xd in users)
+        {
+            // var auth = _db.Auths.FirstOrDefault(a => a.UserId == xd.Id);
+            // if (auth == null) continue;
+
+            // // Generate random 16-byte salt
+            // byte[] salt = RandomNumberGenerator.GetBytes(16);
+            // string saltBase64 = Convert.ToBase64String(salt);
+
+            // // Hash the existing plain password using static PBKDF2Hasher
+            // byte[] hash = Services.PBKDF2Hasher.Hash(auth.PasswordHash, salt);
+            // string hashBase64 = Convert.ToBase64String(hash);
+
+            // // Store back in DB
+            // auth.Token = saltBase64;           // salt
+            // auth.PasswordHash = hashBase64;    // hashed password
+            // _db.Entry(auth).State = EntityState.Modified;
+
+            Debug.WriteLine(_db.Auths.FirstOrDefault(a => a.UserId == xd.Id).PasswordHash);
+        }
+    
+        // // Save changes
+        // _db.SaveChanges();
+
+
+
+
+
         if (!int.TryParse(userId, out userID)) return View(false);
 
         var user = _db.Users.FirstOrDefault(u => u.Id == userID);
@@ -116,7 +148,7 @@ public class HomeController : Controller
             }
         );
 
-
+        _db.SaveChanges();
 
         return Ok(new { message = $"Game borrowed by {username}" });
     }
