@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using System.Linq;
 using BBB.Data;
 using BBB.Models;
 using BBB.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 public class AccountController : Controller
 {
@@ -58,5 +58,18 @@ public class AccountController : Controller
     public IActionResult Register()
     {
         return View();
+    }
+
+    [HttpPost]
+    public ActionResult AddUser(string userName, string userEmail, string userPassword)
+    {
+        if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(userEmail) && !string.IsNullOrWhiteSpace(userPassword))
+        {
+            var user = new User { Username = userName, Email = userEmail, Auth = new Auth { PasswordHash = userPassword }, RoleId = 2 };
+            _context.Users.Add(user);
+            _context.SaveChanges();
+        }
+
+        return RedirectToAction("Login", "Account");
     }
 }
