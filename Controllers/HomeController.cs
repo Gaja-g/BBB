@@ -33,12 +33,99 @@ public class HomeController : Controller
         if (user == null) return View(false);
         if (user.Role.Name == "admin") return View(true);
         return View(false);
-        
+
     }
 
     public IActionResult Account()
     {
-        return View();
+        var userIdStr = HttpContext.Session.GetString("UserId");
+        if (!int.TryParse(userIdStr, out var userId))
+        {
+            Console.WriteLine("No user session found. Redirecting to Login.");
+            return RedirectToAction("Login", "Account");
+        }
+
+        var user = _db.Users.FirstOrDefault(u => u.Id == userId);
+        if (user == null)
+        {
+            Console.WriteLine($"User not found for ID: {userId}");
+            return RedirectToAction("Login", "Account");
+        }
+
+        var borrowedCount = _db.BoardGameUsers
+            .Count(x => x.UserId == userId && x.ReturnDate == null);
+
+        var vm = new EditAccountModel
+        {
+            Username = user.Username,
+            Email = user.Email,
+            BorrowedCount = borrowedCount
+        };
+
+        Console.WriteLine($"Loaded account info for user: {user.Username}");
+        return View(vm);
+    }
+    // POST: /Home/Account
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Account(EditAccountModel model)
+    {
+        var userIdStr = HttpContext.Session.GetString("UserId");
+        if (!int.TryParse(userIdStr, out var userId))
+        {
+            Console.WriteLine("Invalid user session. Redirecting to Login.");
+            return RedirectToAction("Login", "Account");
+        }
+
+        var user = _db.Users.Include(u => u.Auth).FirstOrDefault(u => u.Id == userId);
+        if (user == null)
+        {
+            Console.WriteLine($"User with ID {userId} not found.");
+            return RedirectToAction("Login", "Account");
+        }
+
+        // Update username & email
+        user.Username = model.Username?.Trim() ?? user.Username;
+        user.Email = model.Email?.Trim() ?? user.Email;
+
+        Console.WriteLine($"Attempting to update user: {user.Username}");
+
+        // Password change (if filled)
+        if (!string.IsNullOrWhiteSpace(model.NewPassword) || !string.IsNullOrWhiteSpace(model.ConfirmPassword))
+        {
+            if (string.IsNullOrWhiteSpace(model.NewPassword) || string.IsNullOrWhiteSpace(model.ConfirmPassword))
+            {
+                model.Error = "Password fields cannot be empty.";
+                Console.WriteLine("Password fields were empty.");
+            }
+            else if (model.NewPassword != model.ConfirmPassword)
+            {
+                model.Error = "Passwords do not match.";
+                Console.WriteLine("Password mismatch detected.");
+            }
+            else
+            {
+                var auth = _db.Auths.FirstOrDefault(a => a.UserId == user.Id);
+                if (auth != null)
+                {
+                    auth.PasswordHash = model.NewPassword;
+                    Console.WriteLine("Password successfully updated.");
+                }
+            }
+        }
+
+        if (model.Error == null)
+        {
+            _db.SaveChanges();
+            Console.WriteLine($"User info updated successfully for {user.Username}.");
+
+            HttpContext.Session.SetString("Username", user.Username);
+            model.Message = "Your information has been updated successfully.";
+        }
+
+        model.BorrowedCount = _db.BoardGameUsers.Count(x => x.UserId == userId && x.ReturnDate == null);
+
+        return View(model);
     }
 
     //came with the default project:
@@ -83,7 +170,7 @@ public class HomeController : Controller
 
         return Json(games);
     }
-    
+
     [HttpPost]
     public IActionResult BorrowGame([FromBody] int request)
     {
@@ -98,9 +185,9 @@ public class HomeController : Controller
         BoardGame? game = _db.BoardGames.FirstOrDefault(g => g.Id == request);
 
         if (game == null) return StatusCode(418, "I'm a teapot");
-        
+
         if (game.StatusId != 1 && game.StatusId != 3) return Conflict();
-        
+
         int userID;
         if (!int.TryParse(userId, out userID)) return StatusCode(418, "I'm a teapot");
 
