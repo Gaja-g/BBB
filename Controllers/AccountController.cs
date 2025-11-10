@@ -1,8 +1,10 @@
 using BBB.Data;
 using BBB.Models;
+using BBB.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using BBB.Services;
 
 public class AccountController : Controller
 {
@@ -22,15 +24,26 @@ public class AccountController : Controller
     [HttpPost]
     public IActionResult Login(string username, string password)
     {   
-        var user = _context.Users.FirstOrDefault(u => u.Username == username && _context.Auths.FirstOrDefault(a => a.UserId == u.Id).PasswordHash  == password);
+        
+        User? user = _context.Users.FirstOrDefault(u => u.Username == username);
+        if (user == null)
+        {
+            ViewBag.Error = "Invalid username or password";
+            return RedirectToAction("Login", "Account");
+        }
+        Auth? auth = _context.Auths.FirstOrDefault(a => a.UserId == user.Id);
+        if (auth == null)
+        {
+            ViewBag.Error = "Invalid username or password";
+            return RedirectToAction("Login", "Account");
+        }
 
-        if (user != null)
+        if (PBKDF2Hasher.Verify(password, auth.PasswordHash, auth.Token ?? ""))
         {
             HttpContext.Session.SetString("UserId", user.Id.ToString());
             HttpContext.Session.SetString("Username", user.Username);
             return RedirectToAction("Index", "Home");
         }
-
         ViewBag.Error = "Invalid username or password";
         return RedirectToAction("Login", "Account");
     }
