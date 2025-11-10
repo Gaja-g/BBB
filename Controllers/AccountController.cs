@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using BBB.Services;
+using System.Security.Cryptography;
 
 public class AccountController : Controller
 {
@@ -66,7 +67,14 @@ public class AccountController : Controller
     {
         if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(userEmail) && !string.IsNullOrWhiteSpace(userPassword))
         {
-            var user = new User { Username = userName, Email = userEmail, Auth = new Auth { PasswordHash = userPassword }, RoleId = 2 };
+            
+            byte[] salt = RandomNumberGenerator.GetBytes(16);
+            string saltBase64 = Convert.ToBase64String(salt);
+            
+            byte[] hash = PBKDF2Hasher.Hash(userPassword, salt);
+            string hashBase64 = Convert.ToBase64String(hash);
+
+            var user = new User { Username = userName, Email = userEmail, Auth = new Auth { PasswordHash = hashBase64, Token=saltBase64 }, RoleId = 2 };
             _context.Users.Add(user);
             _context.SaveChanges();
         }
