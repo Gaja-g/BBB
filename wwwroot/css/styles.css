@@ -377,7 +377,8 @@ footer {
   }
 }
 
-/* Approve Page */
+/* Approve Page OLD */
+/*
 .requests-container {
     display: flex;
     align-items:center;
@@ -386,7 +387,7 @@ footer {
 }
 
 .request-card {
-    margin: 0 !important;
+    margin: var(--margin-sm);
     padding: var(--padding-md);
     border: var(--border-width-thin) solid var(--gray-500);
     border-radius: var(--border-radius-lg);
@@ -398,3 +399,77 @@ footer {
     display: flex;
     flex-direction: column;
 }
+*/
+
+/* Approve Page*/
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--margin-md);
+    justify-content: center;
+}
+
+.card {
+    margin: var(--margin-sm);
+    padding: var(--padding-md);
+    border: var(--border-width-thin) solid var(--gray-500);
+    border-radius: var(--border-radius-lg);
+    background: var(--gray-50);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: background 0.2s;
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+}
+
+.card.processed {
+    background-color: var(--gray-200);
+}
+
+.card h3 {
+    margin-bottom: var(--margin-sm);
+    font-size: 1.125rem;
+}
+
+.card p {
+    margin-bottom: var(--margin-sm);
+    font-size: 0.875rem;
+    color: var(--gray-700);
+}
+
+.checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--margin-xs);
+}
+
+.checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: var(--margin-xs);
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.top-buttons {
+    display: flex;
+    gap: var(--margin-sm);
+    margin-bottom: var(--margin-md);
+    justify-content: center;
+}
+
+.top-buttons button {
+    padding: var(--padding-sm) var(--padding-md);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    background-color: var(--primary-color);
+    color: var(--white);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.top-buttons button:hover {
+    background-color: var(--primary-color-dark);
+}
+

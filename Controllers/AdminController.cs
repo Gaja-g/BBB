@@ -85,4 +85,19 @@ public class AdminController : Controller
 
         return View(requests);
     }
+
+    [HttpPost]
+    public IActionResult SaveApproveReturn([FromBody] List<BoardGameUserDecisionDto> decisions)
+    {
+        var bruh = "bruh";
+        bruh = "67";
+        foreach (var decision in decisions)
+        {
+            // db update
+        }
+
+        // _db.SaveChanges();
+
+        return Ok();
+    }
 }

@@ -1,23 +1,89 @@
 @model List<BBB.Models.BoardGameUser>
 
-@{
-    ViewData["Title"] = "Pending Borrow Requests";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
+<div class="top-buttons">
+    <button id="approve-all">Approve All</button>
+    <button id="deny-all">Deny All</button>
+    <button id="save-changes">Save Changes</button>
+</div>
 
-<h2 class="game-upload-page-title">@ViewData["Title"]</h2>
-
-<div class="game-upload-form requests-container">
-    @foreach (var request in Model)
+<div class="cards-container">
+    @foreach (var bgu in Model)
     {
-        <section class="request-card">
-            <div class="request-details">
-                <div><strong>Board Game:</strong> @request.BoardGame.Title</div>
-                <div><strong>User:</strong> @request.User.Username</div>
-                <div><strong>Borrow Date:</strong> @request.BorrowDate:yyyy-MM-dd</div>
-                <div><strong>Return Date:</strong> @(request.ReturnDate?.ToString("yyyy-MM-dd") ?? "-")</div>
-                <div><strong>Status:</strong> @request.BoardGame.Status.Name</div>
+        <div class="card" data-id="@bgu.Id">
+            <h3>@bgu.BoardGame.Title</h3>
+            <p>User: @bgu.User.Username</p>
+            <div class="checkboxes">
+                <label>
+                    <input type="checkbox" class="approve" /> Approve
+                </label>
+                <label>
+                    <input type="checkbox" class="deny" /> Deny
+                </label>
             </div>
-        </section>
+        </div>
     }
 </div>
+
+<script>
+    const cards = document.querySelectorAll(".card");
+
+    cards.forEach(card => {
+        const approve = card.querySelector(".approve");
+        const deny = card.querySelector(".deny");
+
+        approve.addEventListener("change", () => {
+            if (approve.checked) {
+                card.classList.add("processed");
+                deny.checked = false;
+            } else {
+                card.classList.remove("processed");
+            }
+        });
+
+        deny.addEventListener("change", () => {
+            if (deny.checked) {
+                card.classList.add("processed");
+                approve.checked = false;
+            } else {
+                card.classList.remove("processed");
+            }
+        });
+    });
+
+    document.getElementById("approve-all").addEventListener("click", () => {
+        cards.forEach(card => {
+            card.querySelector(".approve").checked = true;
+            card.querySelector(".deny").checked = false;
+            card.classList.add("processed");
+        });
+    });
+
+    document.getElementById("deny-all").addEventListener("click", () => {
+        cards.forEach(card => {
+            card.querySelector(".approve").checked = false;
+            card.querySelector(".deny").checked = true;
+            card.classList.add("processed");
+        });
+    });
+
+    document.getElementById("save-changes").addEventListener("click", () => {
+        const decisions = Array.from(cards).map(card => {
+            const approve = card.querySelector(".approve").checked;
+            const deny = card.querySelector(".deny").checked;
+            let result = 0;
+            if (approve) result = 1;
+            else if (deny) result = 2;
+
+            return {
+                BoardGameUserId: parseInt(card.dataset.id),
+                Result: result
+            };
+        });
+
+        fetch("/Admin/SaveApproveReturn", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(decisions)
+        }).then(() => window.location.reload());
+    });
+</script>
