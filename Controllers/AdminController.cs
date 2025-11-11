@@ -163,18 +163,27 @@ public class AdminController : Controller
         }
 
         // All validations passed, update database
-        /*
         foreach (var decision in decisions)
         {
-            var bgu = _db.BoardGameUsers.Find(decision.BoardGameUserId);
-            if (bgu != null)
+            var bgu = _db.BoardGameUsers
+                .Include(x => x.BoardGame)
+                .FirstOrDefault(x => x.Id == decision.BoardGameUserId);
+
+            if (bgu == null)
+                return BadRequest($"BoardGameUser with ID {decision.BoardGameUserId} not found.");
+
+            if (decision.Result == 2)
             {
-                bgu.ReturnDecision = decision.Result; // Assuming you have a property to save
+                _db.BoardGameUsers.Remove(bgu);
+            }
+            else if (decision.Result == 1)
+            {
+                // Mark the related board game as borrowed
+                bgu.BoardGame.StatusId = 2;
             }
         }
 
         _db.SaveChanges();
-        */
         return Ok();
     }
 }
