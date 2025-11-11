@@ -1,23 +1,28 @@
 @model List<BBB.Models.BoardGameUser>
 
-<div class="top-buttons">
+<div class="approve-top-buttons">
     <button id="approve-all">Approve All</button>
     <button id="deny-all">Deny All</button>
+    <button id="reset-all">Reset</button>
     <button id="save-changes">Save Changes</button>
 </div>
 
-<div class="cards-container">
+<div class="approve-cards-container">
     @foreach (var bgu in Model)
     {
-        <div class="card" data-id="@bgu.Id">
-            <h3>@bgu.BoardGame.Title</h3>
-            <p>User: @bgu.User.Username</p>
-            <div class="checkboxes">
-                <label>
-                    <input type="checkbox" class="approve" /> Approve
+        <div class="approve-card" data-id="@bgu.Id">
+            <h3>Board Game:</h3> 
+            <p>ID: @bgu.BoardGame.Id</p>
+            <p>Title: @bgu.BoardGame.Title</p>
+            <h3>User:</h3>
+            <p>Username: @bgu.User.Username</p>
+            <p>Request Date: @bgu.BorrowDate.ToString("dd/MM/yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture)</p>
+            <div class="approve-checkboxes">
+                <label class="approve-checkbox-label">
+                    <input type="checkbox" class="approve-checkbox" /> Approve
                 </label>
-                <label>
-                    <input type="checkbox" class="deny" /> Deny
+                <label class="deny-checkbox-label">
+                    <input type="checkbox" class="deny-checkbox" /> Deny
                 </label>
             </div>
         </div>
@@ -25,11 +30,11 @@
 </div>
 
 <script>
-    const cards = document.querySelectorAll(".card");
+    const approveCards = document.querySelectorAll(".approve-card");
 
-    cards.forEach(card => {
-        const approve = card.querySelector(".approve");
-        const deny = card.querySelector(".deny");
+    approveCards.forEach(card => {
+        const approve = card.querySelector(".approve-checkbox");
+        const deny = card.querySelector(".deny-checkbox");
 
         approve.addEventListener("change", () => {
             if (approve.checked) {
@@ -51,25 +56,33 @@
     });
 
     document.getElementById("approve-all").addEventListener("click", () => {
-        cards.forEach(card => {
-            card.querySelector(".approve").checked = true;
-            card.querySelector(".deny").checked = false;
+        approveCards.forEach(card => {
+            card.querySelector(".approve-checkbox").checked = true;
+            card.querySelector(".deny-checkbox").checked = false;
             card.classList.add("processed");
         });
     });
 
     document.getElementById("deny-all").addEventListener("click", () => {
-        cards.forEach(card => {
-            card.querySelector(".approve").checked = false;
-            card.querySelector(".deny").checked = true;
+        approveCards.forEach(card => {
+            card.querySelector(".approve-checkbox").checked = false;
+            card.querySelector(".deny-checkbox").checked = true;
             card.classList.add("processed");
         });
     });
 
+    document.getElementById("reset-all").addEventListener("click", () => {
+        approveCards.forEach(card => {
+            card.querySelector(".approve-checkbox").checked = false;
+            card.querySelector(".deny-checkbox").checked = false;
+            card.classList.remove("processed");
+        });
+    });
+
     document.getElementById("save-changes").addEventListener("click", () => {
-        const decisions = Array.from(cards).map(card => {
-            const approve = card.querySelector(".approve").checked;
-            const deny = card.querySelector(".deny").checked;
+        const decisions = Array.from(approveCards).map(card => {
+            const approve = card.querySelector(".approve-checkbox").checked;
+            const deny = card.querySelector(".deny-checkbox").checked;
             let result = 0;
             if (approve) result = 1;
             else if (deny) result = 2;
