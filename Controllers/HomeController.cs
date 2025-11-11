@@ -63,11 +63,19 @@ public class HomeController : Controller
         if (user == null) return View(false);
         if (user.Role.Name == "admin") return View(true);
         return View(false);
-        
+
     }
 
     public IActionResult Account()
     {
+        var userId = HttpContext.Session.GetString("UserId");
+        if (!int.TryParse(userId, out var userID))
+            return RedirectToAction("Index", "Home");
+
+        bool userExists = _db.Users.Any(u => u.Id == userID);
+
+        if (!userExists)
+            return RedirectToAction("Index", "Home");
         return View();
     }
 
@@ -115,7 +123,7 @@ public class HomeController : Controller
 
         return Json(games);
     }
-    
+
     [HttpPost]
     public IActionResult BorrowGame([FromBody] int request)
     {
