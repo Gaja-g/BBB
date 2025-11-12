@@ -1,9 +1,163 @@
-<html>
+@model List<BBB.Models.BoardGameUser>
 
+<div class="approve-top-buttons">
+    <button id="approve-all">Approve All</button>
+    <button id="deny-all">Deny All</button>
+    <button id="reset-all">Reset</button>
+    <button id="save-changes">Save Changes</button>
+</div>
 
-    <body>
-        <hr>
-            XD
-        <hr>
-    </body>
-</html>
+<div class="approve-cards-container">
+    @foreach (var bgu in Model)
+    {
+        var hasConflict = Model.Any(x => x.BoardGame.Id == bgu.BoardGame.Id && x.Id != bgu.Id);
+        <div class="approve-card @(hasConflict ? "linked-card" : "")" data-id="@bgu.Id" data-boardgameid="@bgu.BoardGame.Id">
+            @if (hasConflict)
+            {
+                <span class="linked-marker">[Linked Request #@bgu.BoardGame.Id]</span>
+            }
+            <h3>Request ID: @bgu.Id</h3>
+            <h3>Board Game:</h3>
+            <p>ID: @bgu.BoardGame.Id</p>
+            <p>Title: @bgu.BoardGame.Title</p>
+            <h3>User:</h3>
+            <p>Username: @bgu.User.Username</p>
+            <p>Request Date: @bgu.BorrowDate.ToString("dd/MM/yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture)</p>
+            <div class="approve-checkboxes">
+                <label class="approve-checkbox-label">
+                    <input type="checkbox" class="approve-checkbox" /> Approve
+                </label>
+                <label class="deny-checkbox-label">
+                    <input type="checkbox" class="deny-checkbox" /> Deny
+                </label>
+            </div>
+        </div>
+    }
+</div>
+
+<script>
+    const approveCards = document.querySelectorAll(".approve-card");
+
+    function updateLinked(card, resetAll = false) {
+        const boardGameId = card.dataset.boardgameid;
+        const linkedCards = Array.from(approveCards).filter(c => c.dataset.boardgameid === boardGameId);
+        const approve = card.querySelector(".approve-checkbox");
+        const deny = card.querySelector(".deny-checkbox");
+
+        if (resetAll || (!approve.checked && !deny.checked)) {
+            linkedCards.forEach(c => {
+                c.querySelector(".approve-checkbox").checked = false;
+                c.querySelector(".deny-checkbox").checked = false;
+                c.classList.remove("processed");
+            });
+            return;
+        }
+
+        if (approve.checked) {
+            linkedCards.forEach(c => {
+                if (c !== card) {
+                    c.querySelector(".approve-checkbox").checked = false;
+                    c.querySelector(".deny-checkbox").checked = true;
+                    c.classList.add("processed");
+                }
+            });
+        }
+    }
+
+    approveCards.forEach(card => {
+        const approve = card.querySelector(".approve-checkbox");
+        const deny = card.querySelector(".deny-checkbox");
+
+        approve.addEventListener("change", () => {
+            if (approve.checked) {
+                card.classList.add("processed");
+                deny.checked = false;
+                updateLinked(card);
+            } else {
+                card.classList.remove("processed");
+                updateLinked(card, true);
+            }
+        });
+
+        deny.addEventListener("change", () => {
+            if (deny.checked) {
+                card.classList.add("processed");
+                approve.checked = false;
+                updateLinked(card);
+            } else {
+                card.classList.remove("processed");
+                updateLinked(card, true);
+            }
+        });
+    });
+
+    document.getElementById("approve-all").addEventListener("click", () => {
+        const grouped = {};
+        approveCards.forEach(card => {
+            const bgId = card.dataset.boardgameid;
+            if (!grouped[bgId]) grouped[bgId] = [];
+            grouped[bgId].push(card);
+        });
+
+        Object.values(grouped).forEach(group => {
+            group.forEach((card, index) => {
+                if (index === 0) {
+                    card.querySelector(".approve-checkbox").checked = true;
+                    card.querySelector(".deny-checkbox").checked = false;
+                } else {
+                    card.querySelector(".approve-checkbox").checked = false;
+                    card.querySelector(".deny-checkbox").checked = true;
+                }
+                card.classList.add("processed");
+            });
+        });
+    });
+
+    document.getElementById("deny-all").addEventListener("click", () => {
+        approveCards.forEach(card => {
+            card.querySelector(".approve-checkbox").checked = false;
+            card.querySelector(".deny-checkbox").checked = true;
+            card.classList.add("processed");
+        });
+    });
+
+    document.getElementById("reset-all").addEventListener("click", () => {
+        approveCards.forEach(card => {
+            card.querySelector(".approve-checkbox").checked = false;
+            card.querySelector(".deny-checkbox").checked = false;
+            card.classList.remove("processed");
+        });
+    });
+
+    document.getElementById("save-changes").addEventListener("click", () => {
+        const decisions = Array.from(approveCards).map(card => {
+            const approve = card.querySelector(".approve-checkbox").checked;
+            const deny = card.querySelector(".deny-checkbox").checked;
+            let result = 0;
+            if (approve) result = 1;
+            else if (deny) result = 2;
+
+            return {
+                BoardGameUserId: parseInt(card.dataset.id),
+                Result: result
+            };
+        });
+
+        fetch("/Admin/SaveApproveReturn", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(decisions)
+        })
+        .then(async response => {
+            if (!response.ok) {
+                const errorMessage = await response.text();
+                alert("Error: " + errorMessage);
+                return;
+            }
+            window.location.reload();
+        })
+        .catch(error => {
+            alert("Network or server error: " + error.message);
+        });
+    });
+</script>

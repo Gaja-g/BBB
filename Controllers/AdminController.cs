@@ -1,9 +1,9 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using System.Linq;
 using BBB.Data;
 using BBB.Models;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 public class AdminController : Controller
 {
@@ -30,7 +30,7 @@ public class AdminController : Controller
 
         return View();
     }
-
+    
     [HttpPost]
     public async Task<ActionResult> AddGame(string gameTitle, string gameDesc, IFormFile gameCover)
     {
@@ -76,58 +76,114 @@ public class AdminController : Controller
         if (user == null || user.Name != "admin")
             return RedirectToAction("Index", "Home");
 
-        return View();
+        var requests = _db.BoardGameUsers
+            .Include(r => r.User)
+            .Include(r => r.BoardGame)
+            .Where(r => r.ReturnDate == null)
+            .Where(r => r.BoardGame.StatusId == 3)      // All the unresolved borrow requests
+            .OrderBy(r => r.BoardGame.Id)               // Group by BoardGame.Id (lowest first)
+            .ThenBy(r => r.BorrowDate)                  // Sort by earliest BorrowDate
+            .ThenBy(r => r.Id)                          // Tiebreaker: lower BoardGameUser.Id first
+            .ToList();
+
+        return View(requests);
     }
 
-    // for editing games:
-
-    // GET game
-    [HttpGet]
-    public IActionResult GetOneGame(int gameId)
+    [HttpPost]
+    public IActionResult SaveApproveReturn([FromBody] List<BoardGameUserDecisionDto> decisions)
     {
-        BoardGame? oneGame = _db.BoardGames.FirstOrDefault(g => g.Id == gameId);
+        if (decisions == null || !decisions.Any())
+            return BadRequest("No decisions received.");
+
+        // Check for duplicate BoardGameUserIds in the incoming decisions
+        var duplicateIds = decisions.GroupBy(d => d.BoardGameUserId)
+                                    .Where(g => g.Count() > 1)
+                                    .Select(g => g.Key)
+                                    .ToList();
+        if (duplicateIds.Any())
+            return BadRequest($"Duplicate BoardGameUserIds found: {string.Join(", ", duplicateIds)}");
+
+        // Fetch all unresolved borrow requests
+        var requests = _db.BoardGameUsers
+            .Include(r => r.User)
+            .Include(r => r.BoardGame)
+            .Where(r => r.ReturnDate == null)
+            .Where(r => r.BoardGame.StatusId == 3)
+            .OrderBy(r => r.BoardGame.Id)
+            .ThenBy(r => r.BorrowDate)
+            .ThenBy(r => r.Id)
+            .ToList();
         
-        if (oneGame == null)
-            return Json(null);
-
-        BoardGame result = new BoardGame
+        // Check count
+        if (requests.Count != decisions.Count)
+            return BadRequest($"Mismatch in number of requests and decisions: Db requests: {requests.Count} Decisions: {decisions.Count}");
+        
+        // Validate linked entities
+        var requestMap = new Dictionary<int, List<int>>(); // BoardGameId -> Descision
+        foreach (var r in requests)
         {
-            Id = oneGame.Id,
-            Title = oneGame.Title,
-            Description = oneGame.Description,
-            Image = oneGame.Image,
-            Condition = oneGame.Condition,
-            Link = oneGame.Link
-        };
+            // Find all decisions for this BoardGameUser
+            var decisionResults = decisions
+                .Where(d => d.BoardGameUserId == r.Id)
+                .Select(d => d.Result)
+                .ToList();
 
-        return Json(result);
-    }
+            if (!requestMap.ContainsKey(r.BoardGame.Id))
+                requestMap[r.BoardGame.Id] = new List<int>();
 
-    // POST updated game
-    [HttpPost]
-    public IActionResult EditGame(BoardGame oneGame)
-    {
-        if (ModelState.IsValid)
-        {
-            _db.Entry(oneGame).State = EntityState.Modified;
-            _db.SaveChanges();
-            return Ok();
-        }
-        return View(oneGame);
-    }
-
-    // POST delete game
-    [HttpPost]
-    public IActionResult DeleteGame(int Id)
-    {
-        var oneGame = _db.BoardGames.Find(Id);
-        if (oneGame != null)
-        {
-            _db.BoardGames.Remove(oneGame);
-            _db.SaveChanges();
+            requestMap[r.BoardGame.Id].AddRange(decisionResults);
         }
 
-        // should probably return an http message
+        foreach (var boardGameId in requestMap.Keys)
+        {
+            var values = requestMap[boardGameId];
+
+            var countApprove = values.Count(v => v == 1);
+            var countDeny = values.Count(v => v == 2);
+            var countNone = values.Count(v => v == 0);
+
+            bool isValid = false;
+
+            if (countNone == values.Count)
+                isValid = true;
+            else if (countApprove == 1 && countDeny == values.Count - 1 && countNone == 0)
+                isValid = true;
+
+            if (!isValid)
+            {
+                var errorResponse = new
+                {
+                    BoardGameId = boardGameId,
+                    Decisions = values,
+                    Message = "Invalid decision data: either multiple approvals or a mix of approve/deny/unmarked detected."
+                };
+
+                return BadRequest(errorResponse);
+            }
+        }
+
+        // All validations passed, update database
+        foreach (var decision in decisions)
+        {
+            var bgu = _db.BoardGameUsers
+                .Include(x => x.BoardGame)
+                .FirstOrDefault(x => x.Id == decision.BoardGameUserId);
+
+            if (bgu == null)
+                return BadRequest($"BoardGameUser with ID {decision.BoardGameUserId} not found.");
+
+            if (decision.Result == 2)
+            {
+                _db.BoardGameUsers.Remove(bgu);
+            }
+            else if (decision.Result == 1)
+            {
+                // Mark the related board game as borrowed
+                bgu.BoardGame.StatusId = 2;
+            }
+        }
+
+        _db.SaveChanges();
         return Ok();
     }
 }

@@ -51,6 +51,10 @@
   --gray-50: #f9fafb;
   --white: #ffffff;
 
+  /* Confirm/Deny */
+  --success-green: #00ff21;
+  --fail-red: #c2410c;
+
   /* Font properties */
   /* Sizes */
   /* 12px */
