@@ -62,7 +62,7 @@ public class AccountController : Controller
         return View();
     }
 
-[HttpPost]
+    [HttpPost]
     public ActionResult AddUser(string userName, string userEmail, string userPassword)
     {
         var pattern = @"^[A-Za-z0-9._%+-]+@student\.sdu\.dk$";
@@ -83,5 +83,24 @@ public class AccountController : Controller
         }
 
         return RedirectToAction("Login", "Account");
+    }
+
+    public class Credentials
+    {
+        public string userName { get; set; }
+        public string userEmail { get; set; }
+    }
+
+    [HttpPost]
+    public JsonResult CheckUserAvailability([FromBody]Credentials creds)
+    {
+        bool usernameTaken = _context.Users.Any(u => u.Username == creds.userName);
+        bool emailTaken = _context.Users.Any(u => u.Email == creds.userEmail);
+
+        return Json(new
+        {
+            usernameTaken,
+            emailTaken
+        });
     }
 }
