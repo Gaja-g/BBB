@@ -4,8 +4,8 @@ using BBB.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
-using BBB.Services;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 public class AccountController : Controller
 {
@@ -62,10 +62,13 @@ public class AccountController : Controller
         return View();
     }
 
-    [HttpPost]
+[HttpPost]
     public ActionResult AddUser(string userName, string userEmail, string userPassword)
     {
-        if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(userEmail) && !string.IsNullOrWhiteSpace(userPassword))
+        var pattern = @"^[A-Za-z0-9._%+-]+@student\.sdu\.dk$";
+        bool isMatch = Regex.IsMatch(userEmail, pattern, RegexOptions.IgnoreCase);
+
+        if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(userEmail) && !string.IsNullOrWhiteSpace(userPassword) && isMatch)
         {
             
             byte[] salt = RandomNumberGenerator.GetBytes(16);
