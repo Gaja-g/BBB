@@ -186,4 +186,56 @@ public class AdminController : Controller
         _db.SaveChanges();
         return Ok();
     }
+
+    // for editing games:
+
+    // GET game
+    [HttpGet]
+    public IActionResult GetOneGame(int gameId)
+    {
+        BoardGame? oneGame = _db.BoardGames.FirstOrDefault(g => g.Id == gameId);
+
+        if (oneGame == null)
+            return Json(null);
+
+        BoardGame result = new BoardGame
+        {
+            Id = oneGame.Id,
+            Title = oneGame.Title,
+            Description = oneGame.Description,
+            Image = oneGame.Image,
+            Condition = oneGame.Condition,
+            Link = oneGame.Link
+        };
+
+        return Json(result);
+    }
+
+    // POST updated game
+    [HttpPost]
+    public IActionResult EditGame(BoardGame oneGame)
+    {
+        if (ModelState.IsValid)
+        {
+            _db.Entry(oneGame).State = EntityState.Modified;
+            _db.SaveChanges();
+            return Ok();
+        }
+        return View(oneGame);
+    }
+
+    // POST delete game
+    [HttpPost]
+    public IActionResult DeleteGame(int Id)
+    {
+        var oneGame = _db.BoardGames.Find(Id);
+        if (oneGame != null)
+        {
+            _db.BoardGames.Remove(oneGame);
+            _db.SaveChanges();
+        }
+
+        // should probably return an http message
+        return Ok();
+    }
 }
