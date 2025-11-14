@@ -92,11 +92,6 @@ document.getElementById('filterInput').addEventListener('input', function() {
 function openModal(gameId)
 {
     fetch(`/Admin/GetOneGame?gameId=${gameId}`)
-    /*.then(async response => {
-            const errorMessage = await response.json();
-            alert("Error: " + errorMessage);
-            return;
-    })*/
     
     .then(response => response.json())
     .then(data => {
