@@ -290,7 +290,7 @@ public class AdminController : Controller
         {
             game.Title = gameTitle;
             game.Description = gameDesc;
-            game.Image = relativePath;
+            if(relativePath != "") game.Image = relativePath;
         }
         _db.SaveChanges();
 
