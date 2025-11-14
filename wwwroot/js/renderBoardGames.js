@@ -79,16 +79,16 @@ function borrowGame(gameId, buttonElement) {
 }
 
 // Filter logic
+/*
 document.getElementById('filterInput').addEventListener('input', function() {
     const query = this.value.toLowerCase();
     const filtered = gamesData.filter(game => game.title.toLowerCase().includes(query));
 
     renderGames(filtered);
 });
-
+*/
 
 // populate the EDIT GAME pop-up form
-
 function openModal(gameId)
 {
     fetch(`/Admin/GetOneGame?gameId=${gameId}`)
@@ -98,35 +98,29 @@ function openModal(gameId)
         document.getElementById('gameId').value = data.id;
         document.getElementById('gameTitle').value = data.title;
         document.getElementById('gameDesc').value = data.description;
-        //document.getElementById('gameCover').value = data.Image;
-        // what is const dialog?
         const dialog = document.getElementById('editGame');
         dialog.showModal();
-   })
-    // .catch(error => console.error('Error fetching games:', error));
-    
+    })
+
+    // Save button
+    // Bruh
+    /*
+    document.querySelector('#editGame form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        console.log('Form submitted');
+    });
+    */
+
+    // Delete button
+    document.getElementById("button-delete").addEventListener("click", () => {
+        const gameId = document.getElementById('gameId').value;
+        fetch(`/Admin/DeleteGame/${gameId}`, {
+            method: 'POST'
+        }).then(() => location.reload());
+    });
+
+    // Cancel button
+    document.getElementById("button-cancel").addEventListener("click", () => {
+        document.getElementById('editGame').close();
+    });
 }
-
-// Save button
-document.getElementById('editGame').addEventListener('submit', function (e) {
-  e.preventDefault();
-  const formData = new FormData(this);
-
-  fetch('/Admin/EditGame', {
-    method: 'POST',
-    body: formData
-  }).then(() => location.reload());
-});
-
-// Delete button
-document.getElementById('deleteGameButton').addEventListener('click', function () {
-  const gameId = document.getElementById('gameId').value;
-  fetch(`/Admin/DeleteGame/${gameId}`, {
-    method: 'POST'
-  }).then(() => location.reload());
-});
-
-// Cancel button
-document.getElementById('cancelEditButton').addEventListener('click', function () {
-  document.getElementById('editGame').close();
-});
