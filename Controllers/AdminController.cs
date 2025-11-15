@@ -308,22 +308,43 @@ public class AdminController : Controller
 
     // POST updated game
     [HttpPost]
-    public IActionResult EditGame(BoardGame oneGame)
+    public IActionResult EditGame(int Id, string gameTitle, string gameDesc, IFormFile gameCover)
     {
-        if (ModelState.IsValid)
+        string relativePath = "";
+
+        if (gameCover != null && gameCover.Length > 0)
         {
-            _db.Entry(oneGame).State = EntityState.Modified;
-            _db.SaveChanges();
-            return Ok();
+            string fileName = Guid.NewGuid() + Path.GetExtension(gameCover.FileName);
+
+            string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+            Directory.CreateDirectory(folderPath);
+
+            string savePath = Path.Combine(folderPath, fileName);
+            using (var stream = new FileStream(savePath, FileMode.Create))
+            {
+                gameCover.CopyTo(stream);
+            }
+
+            relativePath = "/Images/" + fileName;
         }
-        return View(oneGame);
+
+        var game = _db.BoardGames.FirstOrDefault(x => x.Id == Id);
+        if (game != null)
+        {
+            game.Title = gameTitle;
+            game.Description = gameDesc;
+            if(relativePath != "") game.Image = relativePath;
+        }
+        _db.SaveChanges();
+
+        return RedirectToAction("Index", "Home");
     }
 
     // POST delete game
     [HttpPost]
     public IActionResult DeleteGame(int Id)
     {
-        var oneGame = _db.BoardGames.Find(Id);
+        var oneGame = _db.BoardGames.FirstOrDefault(x => x.Id == Id);
         if (oneGame != null)
         {
             _db.BoardGames.Remove(oneGame);

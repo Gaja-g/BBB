@@ -164,13 +164,14 @@ function borrowGame(gameId, buttonElement) {
 }
 
 // Filter logic
+/*
 document.getElementById('filterInput').addEventListener('input', function() {
     const query = this.value.toLowerCase();
     const filtered = gamesData.filter(game => game.title.toLowerCase().includes(query));
 
     renderGames(filtered);
 });
-
+*/
 
 // populate the EDIT GAME pop-up form
 

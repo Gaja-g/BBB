@@ -80,7 +80,7 @@
     <dialog id="editGame">
 
             <!-- Editing Form -->
-            <form class="game-edit-form" method="post" enctype="multipart/form-data">
+        <form class="game-edit-form" method="post" action="@Url.Action("EditGame", "Admin")" enctype="multipart/form-data">
             <!--why do I need hidden gam ID?-->
             <input type="hidden" id="gameId" name="Id" />
 
@@ -99,11 +99,11 @@
                 <textarea id="gameDesc" name="gameDesc" rows="4"></textarea>
             </section>
 
-            <button id = "deleteGameButton">Delete</button> @*put it in the left bottom corner*@
-            <button id = "cancelEditButton">Cancel</button>
-            <button class="button button-primary" type="submit">Save</button>
+            <button id="button-delete" type="button">Delete</button>
+            <button id="button-cancel" type="button">Cancel</button>
+            <button id="button-save" type="submit">Save</button>
             
-            </form>
+        </form>
     </dialog>
     
     <script>const allowEdit = @(ViewBag.IsAdmin ? "true" : "false");</script>
