@@ -189,7 +189,14 @@ public class HomeController : Controller
                 g.Id,
                 g.Title,
                 g.Description,
-                g.Image
+                g.Image,
+                Tags = g.BoardGameTags.Select(bt => new
+                {
+                    Id = bt.Tag.Id,
+                    Name = bt.Tag.Name,
+                    TagGroupId = bt.Tag.TagGroupId,
+                    TagGroupName = bt.Tag.TagGroup.Name,
+                })
             }).ToList();
 
         return Json(games);

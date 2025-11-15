@@ -55,7 +55,7 @@
                             @foreach (var tag in group.Tags.OrderBy(t => t.Name))
                             {
                                     <label class="filter-option">
-                                        <input type="checkbox" name="@group.Name.ToLower().Replace(" ", "")" value="@tag.Id">
+                                        <input type="checkbox" name="@group.Name.ToLower().Replace(" ", "")" value="@tag.Id" data-group="@group.Id">
                                         <span class="checkmark"></span>
                                         @tag.Name
                                     </label>
