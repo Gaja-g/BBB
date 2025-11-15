@@ -29,7 +29,7 @@ public class HomeController : Controller
         int userID;
 
         bool isAdmin = false;
-        if(int.TryParse(userId, out userID))
+        if (int.TryParse(userId, out userID))
         {
             var user = _db.Users.Include(u => u.Role).FirstOrDefault(u => u.Id == userID);
             isAdmin = user?.Role?.Name == "admin";
@@ -243,6 +243,5 @@ public class HomeController : Controller
 
         return Ok(new { message = $"Game borrowed by {username}" });
     }
-
 
 }
