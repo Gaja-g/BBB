@@ -411,6 +411,22 @@ footer {
   }
 }
 
+
+
+.filter-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 1px;
+  width: 1px;
+  margin: 0;
+  padding: 0;
+}
+
+.filter-option input[type="radio"]:checked~.checkmark:after {
+  display: block;
+}
+
 /* Approve Form */
 .approve-top-buttons {
   display: flex;
