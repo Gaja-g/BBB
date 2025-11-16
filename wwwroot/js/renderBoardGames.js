@@ -29,8 +29,8 @@ function renderGames(games) {
                 <section class="button-container">
                     <Span>Available</Span>
                     <div style="display:flex; gap:12px">
-                        ${allowEdit ? `<button class="button button-primary edit-button" data-id="${game.id}">Edit</button>` : ''}
-                        <button class="button button-primary borrow-button" data-id="${game.id}">Borrow</button>
+                        ${allowEdit ? `<button class="button button-primary edit-button" data-id="${game.id}">Edit</button>` : ''}                        
+                        <button class="button button-primary borrow-button" data-id="${game.id}" disable=${game.statusId == 1 || game.statusId == 3}>Borrow</button>
                     </div>
                 </section>
             </article>`;
@@ -148,13 +148,16 @@ function borrowGame(gameId, buttonElement) {
     .then(async response => {
         if (response.ok) {
             buttonElement.textContent = 'Borrowed';
-            buttonElement.disabled = true;
         } else {
             const errorText = await response.text();
             if (response.status === 401) {
                 alert('Please log in to borrow games.');
             } else if (response.status === 409) {
                 alert('This game is already borrowed or unavailable.');
+            } else if (response.status === 419) {
+                alert('You have requested/borrowed too many games');
+            } else if (response.status === 420) {
+                alert('Already requested/Borrowed');
             } else {
                 alert('Failed to borrow game: ' + errorText);
             }

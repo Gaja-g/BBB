@@ -196,9 +196,10 @@ public class HomeController : Controller
                     Name = bt.Tag.Name,
                     TagGroupId = bt.Tag.TagGroupId,
                     TagGroupName = bt.Tag.TagGroup.Name,
-                })
+                }),
+                g.StatusId
             }).ToList();
-
+        
         return Json(games);
     }
 
@@ -228,12 +229,15 @@ public class HomeController : Controller
         if (!int.TryParse(userId, out userID))
             return StatusCode(418, "I'm a teapot");
 
-        // TOO MANY BOARD GAMES REQUESTED/BORROWED
-        if (_db.BoardGameUsers.Count(bgu =>
-                bgu.UserId == userID &&
-                (bgu.ReturnDate == null || DateTime.Now < bgu.ReturnDate)
-            ) > 3)
-            return Unauthorized();
+        if (_db.BoardGameUsers.FirstOrDefault( bgu => 
+            bgu.UserId == userID &&
+            bgu.BoardGameId == request &&
+            (bgu.ReturnDate == null || DateTime.Now < bgu.ReturnDate)) != null)
+            return StatusCode(420, "Game already borrowed");
+        if (_db.BoardGameUsers.Count(bgu => 
+            bgu.UserId == userID &&
+            (bgu.ReturnDate == null || DateTime.Now < bgu.ReturnDate)) > 3) 
+            return StatusCode(419, "Too many games");
 
         game.StatusId = 3;
 
