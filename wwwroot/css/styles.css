@@ -241,10 +241,31 @@ footer {
 .card .content .button-container {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 15px;
   flex-wrap: wrap;
   margin-top: auto;
   flex-shrink: 0;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+  align-items: flex-start;
+  margin-right: auto;
+}
+
+.button-container .boxes {
+  flex-shrink: 0;
+  text-align: left;
+  align-self: flex-start;
+  border: none;
+  border-radius: var(--border-radius-2x1);
+  padding: var(--padding-xs) var(--gap-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--white);
+  background: var(--blue-300);
 }
 
 /* SIDEBAR */

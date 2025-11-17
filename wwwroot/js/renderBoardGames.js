@@ -21,13 +21,29 @@ function renderGames(games) {
     games.forEach(game => {
         const li = document.createElement('li');
         li.className = 'card';
+
+        const tagsHTML = game.tags && game.tags.length > 0
+        ? game.tags.map(tag => `<span class="boxes">${tag.name}</span>`).join('')
+        : '<span class="boxes">No tags</span>';
+
+        const statusHTML = game.statusId
+        let statusColor = '';
+        if (game.statusId === 1) {
+            statusColor = 'var(--success)';
+        } else if (game.statusId === 3) {
+            statusColor = 'var(--warning)';
+        } else if (game.statusId === 2 || game.statusId === 4) {
+            statusColor = 'var(--fail)';
+        }
+
         li.innerHTML = `
             <img src="${game.image}" class="images"/>
             <article class="content">
                 <h1>${game.title}</h1>
                 <p>${game.description}</p>
                 <section class="button-container">
-                    <Span>Available</Span>
+                    <div class="tags-container">${tagsHTML}</div>
+                    <Span class="boxes" style="background: ${statusColor};">${game.statusName}</Span>
                     <div style="display:flex; gap:12px">
                         ${allowEdit ? `<button class="button button-primary edit-button" data-id="${game.id}">Edit</button>` : ''}                        
                         <button class="button button-primary borrow-button" data-id="${game.id}" disable=${game.statusId == 1 || game.statusId == 3}>Borrow</button>

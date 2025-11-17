@@ -180,7 +180,8 @@ public class HomeController : Controller
                     TagGroupId = bt.Tag.TagGroupId,
                     TagGroupName = bt.Tag.TagGroup.Name,
                 }),
-                g.StatusId
+                g.StatusId,
+                StatusName = g.Status.Name
             }).ToList();
 
         return Json(games);
