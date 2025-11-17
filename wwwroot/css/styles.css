@@ -371,6 +371,50 @@ footer {
   margin-bottom: var(--margin-none);
 }
 
+.account-section,
+.edit-section,
+.borrowed-games {
+  padding-left: var(--padding-md);
+  padding-right: var(--padding-md);
+}
+
+.edit-section header.borrowed-title {
+  margin-left: var(--padding-md);
+  margin-right: var(--padding-md);
+}
+
+.edit-section label {
+  color: var(--gray-300);
+  font-weight: 600;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.edit-section input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
+}
+
+.card {
+  margin-left: 0;
+  margin-right: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.card .content .button-container {
+  display: flex;
+  justify-content: flex-end;
+  background: none;
+  padding: 0;
+  margin-top: var(--margin-md);
+}
+
 /* Game form */
 .game-upload-page-title {
   color: var(--gray-300);

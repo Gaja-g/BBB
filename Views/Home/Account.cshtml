@@ -30,9 +30,10 @@
     }
 
     <!-- EDIT FORM SECTION -->
-    <section id="editFormSection" class="edit-section" style="margin-top: 24px; display: none;">
-        <header>
-            <h3>Edit Account Information</h3>
+    <section id="editFormSection" class="edit-section" data-has-error="@(!string.IsNullOrEmpty(Model.Error))"
+        style="display:none;">
+        <header class="borrowed-title">
+            <h3>Edit User Information</h3>
         </header>
         @* Show messages *@
         @if (!string.IsNullOrEmpty(Model.Error))
@@ -42,8 +43,6 @@
         <form asp-controller="Home" asp-action="Account" method="post">
             @Html.AntiForgeryToken()
             <fieldset style="border: none; padding: 0;">
-                <legend class="sr-only">Edit Account</legend>
-
                 <label for="Username">Username</label>
                 <input id="Username" name="Username" type="text" value="@Model.Username" required />
 
@@ -78,7 +77,7 @@
     <!-- BORROWED GAMES SECTION -->
     <section class="borrowed-games" style="margin-top: 32px;">
         <header>
-            <h2>Currently Borrowed Games</h2>
+            <h2 class="borrowed-title">Currently Borrowed Games</h2>
         </header>
 
         <ul>
@@ -88,7 +87,7 @@
                     <h3>Catan</h3>
                     <p>This is a short description of the game.</p>
                     <footer class="button-container">
-                        <button class="button button-primary">Return</button>
+                        <button class="button button-primary" style="margin-left:auto;">Return</button>
                     </footer>
                 </article>
             </li>
@@ -96,37 +95,7 @@
     </section>
 </main>
 
-
-<!-- Edit part & password visibility -->
-<script>
-    const editToggleBtn = document.getElementById("editToggleBtn");
-    const cancelEditBtn = document.getElementById("cancelEditBtn");
-    const editFormSection = document.getElementById("editFormSection");
-
-    function toggleForm(show) {
-        editFormSection.style.display = show ? "block" : "none";
-    }
-
-    editToggleBtn?.addEventListener("click", () => toggleForm(true));
-    cancelEditBtn?.addEventListener("click", () => toggleForm(false));
-
-    document.querySelectorAll(".eye-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const target = document.querySelector(btn.dataset.target);
-            if (!target) return;
-            target.type = target.type === "password" ? "text" : "password";
-        });
-    });
-    @if (!string.IsNullOrEmpty(Model.Error))
-        {
-            <text>
-                document.addEventListener("DOMContentLoaded", function() 
-                {
-                    toggleForm(true);
-                });
-            </text>
-    }
-</script>
+<script src="~/js/account.js"></script>
 
 <style>
     label {
@@ -163,7 +132,7 @@
         color: #ffb3b3;
         padding: 10px 14px;
         border-radius: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 12px;       
     }
 
     .alert-success {
@@ -172,6 +141,8 @@
         padding: 10px 14px;
         border-radius: 8px;
         margin-bottom: 12px;
+        margin-left: var(--padding-md);
+        margin-right: var(--padding-md);
     }
 
     .form-actions {
