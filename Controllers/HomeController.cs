@@ -165,8 +165,9 @@ public class HomeController : Controller
     [HttpGet]
     public IActionResult GetGames()
     {
+        var statusOrder = new[] { 1, 3, 2, 4 };
+
         var games = _db.BoardGames
-            .Where(g => g.StatusId == 1 || g.StatusId == 3)
             .Select(g => new
             {
                 g.Id,
@@ -182,7 +183,13 @@ public class HomeController : Controller
                 }),
                 g.StatusId,
                 StatusName = g.Status.Name
-            }).ToList();
+            })
+            .ToList()
+            .OrderBy(g => g.Title)
+            .GroupBy(g => g.StatusId)
+            .OrderBy(g => Array.IndexOf(statusOrder, g.Key))
+            .SelectMany(g => g)
+            .ToList();
 
         return Json(games);
     }

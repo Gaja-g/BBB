@@ -187,7 +187,6 @@ footer {
 }
 
 /* GAME CARDS */
-
 .card {
   display: flex;
   align-items: stretch;
@@ -266,6 +265,18 @@ footer {
   font-weight: var(--font-weight-bold);
   color: var(--white);
   background: var(--blue-300);
+}
+
+.card-hidden {
+  display: none !important;
+}
+
+.no-games-card {
+  padding: 20px;
+  color: var(--blue-custom-light);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* SIDEBAR */
@@ -472,8 +483,6 @@ footer {
   }
 }
 
-
-
 .filter-option input[type="radio"] {
   position: absolute;
   opacity: 0;
@@ -567,18 +576,17 @@ footer {
   background-color: var(--gray-500);
 }
 
-.linked-card {
+.approve-linked-card {
   border: var(--border-width-thick) solid var(--orange-500) !important;
 }
 
-.linked-marker {
+.approve-linked-marker {
   color: var(--orange-500);
   font-weight: var(--font-weight-bold);
   font-size: var(--font-size-sm);
 }
 
 /* Return Form */
-
 .return-top-buttons {
   display: flex;
   justify-content: center;
