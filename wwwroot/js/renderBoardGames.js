@@ -8,7 +8,8 @@ fetch('/Home/GetGames')
     .then(data => {
         gamesData = data; // Store fetched games
         renderGames(gamesData); // Initial render
-        attachGameButtons(); // Attach event listeners
+        attachGameButtons(); // Attach button listeners
+        attachModalListeners(); // Attach modal listeners
     })
     .catch(error => console.error('Error fetching games:', error));
 
@@ -18,11 +19,11 @@ function renderGames(games) {
     const list = document.querySelector('.scrolloverflow');
     list.innerHTML = '';
 
-    // Display message if no games are found with current filters
-    if (!games.length) {
-        list.innerHTML = '<li style="padding: 20px; color:var(--blue-custom-light); display: flex; align-items: center; gap: 8px;"><span class="material-symbols-outlined">search_off</span> No games found matching your filters</li>';
-        return;
-    }
+    // Add the "no games found" message so it can be shown/hidden via card-hidden
+    const noGamesLi = document.createElement('li');
+    noGamesLi.className = 'no-games-card card-hidden';
+    noGamesLi.innerHTML = '<span class="material-symbols-outlined">search_off</span> No games found matching your filters';
+    list.appendChild(noGamesLi);
 
     // Render All games
     games.forEach(game => {
@@ -105,6 +106,7 @@ function gameMatchesFilters(game, filters) {
 // Filter Rendered Games
 function applyFilters(filters) {
     const cards = document.querySelectorAll('.scrolloverflow .card');
+    let listEmpty = true;
 
     cards.forEach(card => {
         const gameId = Number(card.dataset.gameId);
@@ -113,10 +115,21 @@ function applyFilters(filters) {
 
         if (gameMatchesFilters(game, filters)) {
             card.classList.remove('card-hidden');
+            listEmpty = false;
         } else {
             card.classList.add('card-hidden');
         }
     });
+
+    // Show or hide the "no games found" message
+    const noGamesLi = document.querySelector('.scrolloverflow .no-games-card');
+    if (noGamesLi) {
+        if (listEmpty) {
+            noGamesLi.classList.remove('card-hidden');
+        } else {
+            noGamesLi.classList.add('card-hidden');
+        }
+    }
 }
 
 // Attach Event Listeners to Card Buttons and Filters
@@ -189,23 +202,25 @@ function openModal(gameId) {
 }
 
 // Attach Modal listeners
-document.getElementById('editGame').addEventListener('submit', function (e) {
-    e.preventDefault();
-    const formData = new FormData(this);
+function attachModalListeners() {
+    document.getElementById('button-save').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
 
-    fetch('/Admin/EditGame', {
-        method: 'POST',
-        body: formData
-    }).then(() => location.reload());
-});
+        fetch('/Admin/EditGame', {
+            method: 'POST',
+            body: formData
+        }).then(() => location.reload());
+    });
 
-document.getElementById('deleteGameButton').addEventListener('click', function () {
-    const gameId = document.getElementById('gameId').value;
-    fetch(`/Admin/DeleteGame/${gameId}`, {
-        method: 'POST'
-    }).then(() => location.reload());
-});
+    document.getElementById('button-delete').addEventListener('click', function () {
+        const gameId = document.getElementById('gameId').value;
+        fetch(`/Admin/DeleteGame/${gameId}`, {
+            method: 'POST'
+        }).then(() => location.reload());
+    });
 
-document.getElementById('cancelEditButton').addEventListener('click', function () {
-    document.getElementById('editGame').close();
-});
+    document.getElementById('button-cancel').addEventListener('click', function () {
+        document.getElementById('editGame').close();
+    });
+}

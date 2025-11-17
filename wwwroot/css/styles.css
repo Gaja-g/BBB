@@ -247,7 +247,15 @@ footer {
 }
 
 .card-hidden {
-    display: none;
+    display: none !important;
+}
+
+.no-games-card {
+    padding: 20px;
+    color: var(--blue-custom-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 /* SIDEBAR */
