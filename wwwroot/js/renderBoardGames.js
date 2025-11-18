@@ -263,16 +263,45 @@ const searchButton = document.getElementById('game-search-form');
 if (searchButton) {
     searchButton.addEventListener('submit', function (e) {
         e.preventDefault();
-        const query = this.querySelector('input[name="query"]').value;
+        const query = (this.querySelector('input[name="query"]')?.value || '').trim();
+
+        if (!query) {
+            filterMap.queryActive = false;
+            filterMap.queryFilters = [];
+            filterMap = getActiveFilters();
+            applyFilters(filterMap);
+            return;
+        }
+
         fetch(`/Home/SearchGames?query=${encodeURIComponent(query)}`, { method: 'GET' })
             .then(response => response.json())
             .then(data => {
                 filterMap.queryActive = true;
                 filterMap.queryFilters = data;
                 filterMap = getActiveFilters();
-                console.log('Search results:', filterMap.queryFilters);
                 applyFilters(filterMap);
             })
             .catch(error => console.error('Error searching games:', error));
+    });
+}
+
+// Attach Search Clear Button listener
+const searchInput = document.querySelector('#game-search-form input[name="query"]');
+const searchClearButton = document.getElementById('search-clear');
+if (searchClearButton && searchInput) {
+    // show/hide clear button as user types
+    searchInput.addEventListener('input', function () {
+        searchClearButton.style.display = (this.value || '') ? 'inline' : 'none';
+    });
+
+    // clear input, disable query filter and reapply filters
+    searchClearButton.addEventListener('click', function () {
+        searchInput.value = '';
+        searchClearButton.style.display = 'none';
+        filterMap.queryActive = false;
+        filterMap.queryFilters = [];
+        filterMap = getActiveFilters();
+        applyFilters(filterMap);
+        searchInput.focus();
     });
 }
