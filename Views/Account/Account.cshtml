@@ -40,7 +40,7 @@
         {
             <div class="alert-danger">@Model.Error</div>
         }
-        <form asp-controller="Home" asp-action="Account" method="post">
+        <form asp-controller="Account" asp-action="Account" method="post">
             @Html.AntiForgeryToken()
             <fieldset style="border: none; padding: 0;">
                 <label for="Username">Username</label>
@@ -81,22 +81,14 @@
             <h2 class="borrowed-title">Currently Borrowed Games</h2>
         </header>
 
-        <ul>
-            <li class="card">
-                <img class="images" src="/Images/catan.webp" alt="Catan board game package" />
-                <article class="content">
-                    <h3>Catan</h3>
-                    <p>This is a short description of the game.</p>
-                    <footer class="button-container">
-                        <button class="button button-primary" style="margin-left:auto;">Return</button>
-                    </footer>
-                </article>
-            </li>
+        <ul class="scrolloverflow">
         </ul>
     </section>
 </main>
 
 <script src="~/js/account.js"></script>
+<script src="~/js/renderUserBoardGames.js"></script>
+
 
 <style>
     label {
