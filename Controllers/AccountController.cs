@@ -170,11 +170,14 @@ public class AccountController : Controller
             return StatusCode(418, "I'm a teapot");
         }
 
-        if (PBKDF2Hasher.Verify(password, auth.PasswordHash, auth.Token ?? ""))
+        if (!string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(password))
         {
-            HttpContext.Session.SetString("UserId", user.Id.ToString());
-            HttpContext.Session.SetString("Username", user.Username);
-            return RedirectToAction("Index", "Home");
+            if (PBKDF2Hasher.Verify(password, auth.PasswordHash, auth.Token ?? ""))
+            {
+                HttpContext.Session.SetString("UserId", user.Id.ToString());
+                HttpContext.Session.SetString("Username", user.Username);
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         return StatusCode(418, "I'm a teapot");
