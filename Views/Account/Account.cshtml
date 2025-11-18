@@ -40,7 +40,7 @@
         {
             <div class="alert-danger">@Model.Error</div>
         }
-        <form asp-controller="Home" asp-action="Account" method="post">
+        <form asp-controller="Account" asp-action="Account" method="post">
             @Html.AntiForgeryToken()
             <fieldset style="border: none; padding: 0;">
                 <label for="Username">Username</label>
