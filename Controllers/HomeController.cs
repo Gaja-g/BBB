@@ -175,30 +175,20 @@ public class HomeController : Controller
         return maxLen == 0 ? 100 : (int)((1.0 - (double)distance / maxLen) * 100);
     }
 
+    /*
     [HttpGet]
-    public IActionResult SearchGames(string query)
+    public IActionResult SearchGames([FromQuery] string query)
     {
         if (string.IsNullOrWhiteSpace(query))
             return BadRequest("Search query is null or white space");
 
-        var statusOrder = new[] { 1, 3, 2, 4 };
-
+        // Get all games data
         var games = _db.BoardGames
             .Select(g => new
             {
                 g.Id,
                 g.Title,
-                g.Description,
-                g.Image,
-                Tags = g.BoardGameTags.Select(bt => new
-                {
-                    Id = bt.Tag.Id,
-                    Name = bt.Tag.Name,
-                    TagGroupId = bt.Tag.TagGroupId,
-                    TagGroupName = bt.Tag.TagGroup.Name,
-                }),
-                g.StatusId,
-                StatusName = g.Status.Name
+                g.Description
             })
             .ToList();
 
@@ -207,23 +197,77 @@ public class HomeController : Controller
             .Where(g =>
             {
                 int titleScore = Similarity(query, g.Title);
-                int descScore = Similarity(query, g.Description);
-                int tagScore = g.Tags.Any() ? g.Tags.Max(t => Similarity(query, t.Name)) : 0;
-
-                int maxScore = Math.Max(titleScore, Math.Max(descScore, tagScore));
+                int descScore = string.IsNullOrEmpty(g.Description) ? 0 : Similarity(query, g.Description);
+                
+                int maxScore = Math.Max(titleScore, descScore);
 
                 // Only return matches above threshold
-                return maxScore >= 60; // threshold can be tuned
+                return maxScore >= 60;
             })
-            .OrderBy(g => g.Title)
-            .GroupBy(g => g.StatusId)
-            .OrderBy(g => Array.IndexOf(statusOrder, g.Key))
-            .SelectMany(g => g)
+            .Select(g => g.Id)
             .ToList();
 
         return Json(results);
     }
-    
+    */
+
+    [HttpGet]
+    public IActionResult SearchGames([FromQuery] string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return BadRequest("Search query is null or white space");
+
+        // Tokenize query into words
+        var qTokens = System.Text.RegularExpressions.Regex
+            .Split(query.Trim().ToLowerInvariant(), @"\W+")
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .ToArray();
+
+        // Get all games data
+        var games = _db.BoardGames
+            .Select(g => new
+            {
+                g.Id,
+                g.Title,
+                g.Description
+            })
+            .ToList();
+
+        // If any token is a substring of title or description, treat as a match.
+        // Otherwise compute average per token fuzzy score against title/description.
+        var results = games
+            .Where(g =>
+            {
+                var title = g.Title ?? string.Empty;
+                var desc = g.Description ?? string.Empty;
+
+                // fast substring hit for any token
+                if (qTokens.Any(q => title.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0
+                                  || desc.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    return true;
+                }
+
+                // compute average best-match per token
+                var tokenScores = qTokens.Select(q =>
+                {
+                    // compare token against full title/description
+                    int titleScore = Similarity(q, title);
+                    int descScore = string.IsNullOrEmpty(desc) ? 0 : Similarity(q, desc);
+                    return Math.Max(titleScore, descScore);
+                }).ToArray();
+
+                var avgScore = tokenScores.Length == 0 ? 0 : tokenScores.Average();
+
+                // threshold
+                return avgScore >= 60.0;
+            })
+            .Select(g => g.Id)
+            .ToList();
+
+        return Json(results);
+    }
+
     [HttpPost]
     public IActionResult BorrowGame([FromBody] int request)
     {
