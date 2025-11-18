@@ -4,6 +4,7 @@ using BBB.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
@@ -25,19 +26,11 @@ public class AccountController : Controller
         if (!int.TryParse(userIdStr, out userId))
             return StatusCode(418, "I'm a teapot");
         
-        var user = _db.Users.FirstOrDefault(u => u.Id == userId);
-        if (user == null)
-            return RedirectToAction("Login", "Account");
-
-        var borrowedCount = _db.BoardGameUsers
-            .Count(x => x.UserId == userId && x.ReturnDate == null);
-
-        var vm = new EditAccountModel
+        var vm = GetEditAccountModel(userId);
+        if (vm == null)
         {
-            Username = user.Username,
-            Email = user.Email,
-            BorrowedCount = borrowedCount
-        };
+            return RedirectToAction("Login", "Account");
+        }
 
         return View("Account", vm);
     }
@@ -47,7 +40,7 @@ public class AccountController : Controller
     public IActionResult Account(EditAccountModel model)
     {
         var userIdStr = HttpContext.Session.GetString("UserId");
-        
+        Debug.WriteLine($"{model.BorrowedCount} XDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
         int userId;
         // USER NOT FOUND
         if (!int.TryParse(userIdStr, out userId))
@@ -60,8 +53,7 @@ public class AccountController : Controller
 
         // update username + email
         user.Username = model.Username.Trim();
-        user.Email = model.Email.Trim();
-
+        
         // password update
         if (!string.IsNullOrWhiteSpace(model.NewPassword) ||
             !string.IsNullOrWhiteSpace(model.ConfirmPassword))
@@ -95,8 +87,8 @@ public class AccountController : Controller
             model.Message = "Your information has been updated successfully.";
             HttpContext.Session.SetString("Username", user.Username);
         }
-
-        return View("Account", model);
+        var vm = GetEditAccountModel(userId);
+        return View("Account", vm);
     }
 
 
@@ -239,5 +231,22 @@ public class AccountController : Controller
             usernameTaken,
             emailTaken
         });
+    }
+
+    private EditAccountModel? GetEditAccountModel(int userId)
+    {
+        var user = _db.Users.FirstOrDefault(u => u.Id == userId);
+        if (user == null)
+            return null;
+        var borrowedCount = _db.BoardGameUsers
+            .Count(x => x.UserId == userId && x.ReturnDate == null);
+
+        var vm = new EditAccountModel
+        {
+            Username = user.Username,
+            Email = user.Email,
+            BorrowedCount = borrowedCount
+        };
+        return vm;
     }
 }
