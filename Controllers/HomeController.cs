@@ -214,6 +214,89 @@ public class HomeController : Controller
         return Json(games);
     }
 
+    // Fuzzy search functions
+    private int LevenshteinDistance(string s, string t)
+    {
+        if (string.IsNullOrEmpty(s)) return string.IsNullOrEmpty(t) ? 0 : t.Length;
+        if (string.IsNullOrEmpty(t)) return s.Length;
+
+        int[,] d = new int[s.Length + 1, t.Length + 1];
+
+        for (int i = 0; i <= s.Length; i++) d[i, 0] = i;
+        for (int j = 0; j <= t.Length; j++) d[0, j] = j;
+
+        for (int i = 1; i <= s.Length; i++)
+        {
+            for (int j = 1; j <= t.Length; j++)
+            {
+                int cost = s[i - 1] == t[j - 1] ? 0 : 1;
+                d[i, j] = Math.Min(
+                    Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+                    d[i - 1, j - 1] + cost
+                );
+            }
+        }
+
+        return d[s.Length, t.Length];
+    }
+
+    // Convert distance to similarity percentage (0-100)
+    private int Similarity(string s, string t)
+    {
+        int distance = LevenshteinDistance(s.ToLower(), t.ToLower());
+        int maxLen = Math.Max(s.Length, t.Length);
+        return maxLen == 0 ? 100 : (int)((1.0 - (double)distance / maxLen) * 100);
+    }
+
+    [HttpGet]
+    public IActionResult SearchGames(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return BadRequest("Search query is null or white space");
+
+        var statusOrder = new[] { 1, 3, 2, 4 };
+
+        var games = _db.BoardGames
+            .Select(g => new
+            {
+                g.Id,
+                g.Title,
+                g.Description,
+                g.Image,
+                Tags = g.BoardGameTags.Select(bt => new
+                {
+                    Id = bt.Tag.Id,
+                    Name = bt.Tag.Name,
+                    TagGroupId = bt.Tag.TagGroupId,
+                    TagGroupName = bt.Tag.TagGroup.Name,
+                }),
+                g.StatusId,
+                StatusName = g.Status.Name
+            })
+            .ToList();
+
+        // Apply fuzzy search
+        var results = games
+            .Where(g =>
+            {
+                int titleScore = Similarity(query, g.Title);
+                int descScore = Similarity(query, g.Description);
+                int tagScore = g.Tags.Any() ? g.Tags.Max(t => Similarity(query, t.Name)) : 0;
+
+                int maxScore = Math.Max(titleScore, Math.Max(descScore, tagScore));
+
+                // Only return matches above threshold
+                return maxScore >= 60; // threshold can be tuned
+            })
+            .OrderBy(g => g.Title)
+            .GroupBy(g => g.StatusId)
+            .OrderBy(g => Array.IndexOf(statusOrder, g.Key))
+            .SelectMany(g => g)
+            .ToList();
+
+        return Json(results);
+    }
+    
     [HttpPost]
     public IActionResult BorrowGame([FromBody] int request)
     {
