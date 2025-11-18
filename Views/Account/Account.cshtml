@@ -47,9 +47,10 @@
                 <input id="Username" name="Username" type="text" value="@Model.Username" required />
 
                 <label for="Email">Email</label>
-                <input id="Email" name="Email" type="email" value="@Model.Email" required />
+                <input id="Email" name="Email" type="email" value="@Model.Email" disabled
+                    style="background:var(--blue-300);" />
 
-                <label for="NewPassword">New Password</label>
+                <label for=" NewPassword">New Password</label>
                 <div class="password-wrapper">
                     <input id="NewPassword" name="NewPassword" type="password"
                         placeholder="Leave blank to keep current" />
@@ -80,22 +81,14 @@
             <h2 class="borrowed-title">Currently Borrowed Games</h2>
         </header>
 
-        <ul>
-            <li class="card">
-                <img class="images" src="/Images/catan.webp" alt="Catan board game package" />
-                <article class="content">
-                    <h3>Catan</h3>
-                    <p>This is a short description of the game.</p>
-                    <footer class="button-container">
-                        <button class="button button-primary" style="margin-left:auto;">Return</button>
-                    </footer>
-                </article>
-            </li>
+        <ul class="scrolloverflow">
         </ul>
     </section>
 </main>
 
 <script src="~/js/account.js"></script>
+<script src="~/js/renderUserBoardGames.js"></script>
+
 
 <style>
     label {
@@ -132,7 +125,7 @@
         color: #ffb3b3;
         padding: 10px 14px;
         border-radius: 8px;
-        margin-bottom: 12px;       
+        margin-bottom: 12px;
     }
 
     .alert-success {

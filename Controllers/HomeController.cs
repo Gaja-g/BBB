@@ -42,6 +42,12 @@ public class HomeController : Controller
             .OrderBy(tg => tg.Name)
             .ToList();
 
+        var statuses = _db.Statuses
+            .OrderBy(s => s.Id)
+            .ToList();
+
+        ViewBag.Statuses = statuses;
+
         return View(tagGroups);
 
         // var users = _db.Users.ToList();
@@ -60,80 +66,21 @@ public class HomeController : Controller
 
     }
 
-    public IActionResult Account()
+    [HttpGet]
+    public IActionResult GetStatuses()
     {
-        var userIdStr = HttpContext.Session.GetString("UserId");
-        int userId = int.Parse(userIdStr);
-
-        var user = _db.Users.FirstOrDefault(u => u.Id == userId);
-        if (user == null)
-            return RedirectToAction("Login", "Account");
-
-        var borrowedCount = _db.BoardGameUsers
-            .Count(x => x.UserId == userId && x.ReturnDate == null);
-
-        var vm = new EditAccountModel
-        {
-            Username = user.Username,
-            Email = user.Email,
-            BorrowedCount = borrowedCount
-        };
-
-        return View(vm);
-    }
-    // POST: /Home/Account
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult Account(EditAccountModel model)
-    {
-        var userIdStr = HttpContext.Session.GetString("UserId");
-        int userId = int.Parse(userIdStr);
-
-        var user = _db.Users.Include(u => u.Auth).FirstOrDefault(u => u.Id == userId);
-        if (user == null)
-            return RedirectToAction("Login", "Account");
-
-        // update username + email
-        user.Username = model.Username.Trim();
-        user.Email = model.Email.Trim();
-
-        // password update
-        if (!string.IsNullOrWhiteSpace(model.NewPassword) ||
-            !string.IsNullOrWhiteSpace(model.ConfirmPassword))
-        {
-            if (string.IsNullOrWhiteSpace(model.NewPassword) ||
-                string.IsNullOrWhiteSpace(model.ConfirmPassword))
+        var statuses = _db.Statuses
+            .Select(s => new
             {
-                model.Error = "Password fields cannot be empty.";
-            }
-            else if (model.NewPassword != model.ConfirmPassword)
-            {
-                model.Error = "Passwords do not match.";
-            }
-            else
-            {
-                // password hashing
-                byte[] salt = RandomNumberGenerator.GetBytes(16);
-                string saltBase64 = Convert.ToBase64String(salt);
+                s.Id,
+                s.Name
+            })
+            .ToList();
 
-                byte[] hash = PBKDF2Hasher.Hash(model.NewPassword, salt);
-                string hashBase64 = Convert.ToBase64String(hash);
-
-                user.Auth.PasswordHash = hashBase64;
-                user.Auth.Token = saltBase64;
-            }
-        }
-
-        if (model.Error == null)
-        {
-            _db.SaveChanges();
-            model.Message = "Your information has been updated successfully.";
-            HttpContext.Session.SetString("Username", user.Username);
-        }
-
-        return View("Account", model);
+        return Json(statuses);
     }
 
+    
 
     //came with the default project:
     public IActionResult Privacy()
@@ -181,7 +128,8 @@ public class HomeController : Controller
                     TagGroupId = bt.Tag.TagGroupId,
                     TagGroupName = bt.Tag.TagGroup.Name,
                 }),
-                g.StatusId
+                g.StatusId,
+                StatusName = g.Status.Name
             })
             .ToList()
             .OrderBy(g => g.Title)
