@@ -200,7 +200,7 @@ function borrowGame(gameId, buttonElement) {
     })
         .then(async response => {
             if (response.ok) {
-                buttonElement.textContent = 'Borrowed';
+                buttonElement.textContent = 'Requested';
             } else {
                 const errorText = await response.text();
                 if (response.status === 401) {

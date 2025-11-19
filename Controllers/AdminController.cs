@@ -357,13 +357,14 @@ public class AdminController : Controller
         if (!AdminCheck()) return RedirectToAction("Index", "Home");
 
         var oneGame = _db.BoardGames.FirstOrDefault(x => x.Id == Id);
-        if (oneGame != null)
+        if (oneGame != null && oneGame.StatusId == 1 || oneGame.StatusId == 4)
         {
             _db.BoardGames.Remove(oneGame);
             _db.SaveChanges();
         }
+            else return BadRequest("Cannot delete a game with this status.");
 
-        // should probably return an http message
+        // should probably return an http message // might wanna add "are you sure" message
         return Ok();
     }
 }
