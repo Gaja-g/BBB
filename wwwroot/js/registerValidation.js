@@ -70,8 +70,8 @@
 
             console.log("1");
             // --- If everything passes, submit form normally ---
-            //form.submit();
-            dialog.showModal();
+            form.submit();
+            //dialog.showModal();
             console.log("2");
 
         } catch (error) {
