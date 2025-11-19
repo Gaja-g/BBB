@@ -3,10 +3,19 @@
     const usernameInput = form.querySelector('input[name="userName"]');
     const emailInput = form.querySelector('input[name="userEmail"]');
     const passwordInput = form.querySelector('input[name="userPassword"]');
+    const dialog = document.getElementById("dialog-box");
+    const closeButton = document.getElementById("close-dialog");
+
+    let readyToSubmit = false;
 
     // Make the submit handler async so we can use await
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        if (readyToSubmit) {
+            window.location.replace("/Account/Login");
+            return;
+        }
 
         const username = usernameInput.value.trim();
         const email = emailInput.value.trim();
@@ -61,12 +70,19 @@
 
             console.log("1");
             // --- If everything passes, submit form normally ---
-            form.submit();
+            //form.submit();
+            dialog.showModal();
             console.log("2");
 
         } catch (error) {
             console.error('Error checking availability:', error);
             alert('An error occurred while checking username/email availability.');
         }
+
+        closeButton.addEventListener("click", () => {
+            dialog.close();
+            readyToSubmit = true;
+            form.requestSubmit();
+        });
     });
 });
